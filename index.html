@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<!-- release v4.3.6, copyright 2014 - 2016 Kartik Visweswaran -->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>浏览器书签插件</title>
+    <link href="/resource/video-js.css" rel="stylesheet">
+    <style>
+        .box {
+            border: 1px solid gray;
+            padding: 20px;
+            width: 30%;
+            height: inherit;
+            background: -webkit-linear-gradient(top, transparent 20px, #bfc3be 21px), -webkit-linear-gradient(left, transparent 20px, #bfc3be 21px);
+            background-size: 21px 21px;
+            border-radius: 5px;
+            float: left;
+            margin-right: 0.5%;
+            min-width: 450px;
+        }
+
+        .mgtop20 {
+            margin-top: 20px;
+        }
+
+        .box p {
+            margin-bottom: 5px;
+            background-color: #61612b94;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 5px;
+        }
+
+        .box a {
+            padding: 10px 20px;
+            background-color: #0080ff;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .box a:hover {
+            background-color: #53a4f4;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <a href="javascript:(function(){var script = document.createElement('script');script.src='//xfxiao.github.io/tools.js?'+new Date().getTime();document.querySelector('body').appendChild(script);})()"
+            onclick="alert('请将此链接拖至书签栏，在表单办理页面点击书签栏标签使用');return false">
+            Boss企业端插件（Attack Boss）- 五竹</a>
+        <div class="mgtop20">
+            <p>视频教程：</p>
+            <video class="video-js" controls preload="auto" id="my-video" width="450">
+                <source src="/static/demo.mp4">
+            </video>
+        </div>
+    </div>
+</body>
+<script src="/resource/video.min.7.10.2.js"></script>
+<script>
+    var myPlayer = videojs('my-video');
+    videojs("my-video").ready(function () {
+        var myPlayer = this;
+        myPlayer.play();
+    });
+</script>
+
+</html>
