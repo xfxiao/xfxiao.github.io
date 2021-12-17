@@ -255,7 +255,7 @@
         idx = idx || 0;
         var btn = btns[idx];
         if (btn) {
-            //btn.onclick();
+            btn.onclick();
             console.log(btn);
             console.log('click');
             setTimeout(() => {
