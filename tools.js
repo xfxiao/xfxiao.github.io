@@ -1,7 +1,7 @@
 /*
     这里是Boss企业端快速筛选外挂插件
     作者：五竹
-    时间：2021年6月17日
+    时间：2021年12月17日
 */
 (function ($) {
     var boxClass = 'wuzhu_tools_box', version = 'V1.0',
@@ -255,7 +255,7 @@
         idx = idx || 0;
         var btn = btns[idx];
         if (btn) {
-            btn.onclick();
+            btn.click();
             console.log(btn);
             console.log('click');
             setTimeout(() => {
