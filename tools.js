@@ -137,16 +137,39 @@
                 <div><span class="left">年龄：</span>
                     <input type="text" class="input" id="tools_txt_minAge" value="不限" /> - <input type="text" class="input" id="tools_txt_maxAge" value="不限" />
                 </div>
+                <div><span class="left">性别：</span>
+                <input type="radio" name="rd_sex" id="rd_sex_all" checked value="1" /><label for="rd_sex_all">全部</label>
+                    <input type="radio" name="rd_sex" id="rd_sex_male" value="1" /><label for="rd_sex_male">男</label>
+                    <input type="radio" name="rd_sex" id="rd_sex_female"  value="2" /><label for="rd_sex_female">女</label>
+                </div>
                 <div><span class="left">工作年限：</span>
                     <input type="text" class="input" id="tools_txt_minWorkYears" value="不限" /> - <input type="text" class="input" id="tools_txt_maxWorkYears" value="不限" />
+                </div>
+                <div><span class="left">活跃度：</span>
+                    <select id="activity">
+                        <option value="0" selected>不限</option>
+                        <option value="1">刚刚活跃</option>
+                        <option value="2">今日活跃</option>
+                        <option value="3">3日内活跃</option>
+                        <option value="4">本周活跃</option>
+                        <option value="5">本月活跃</option>
+                    </select>
                 </div>
                 <div><span class="left">稳定性 ></span>
                     <input type="text" class="input " id="tools_txt_stability" value="1" />
                     <div class="tip">稳定率 = 工作年限/工作次数，如稳定率为1.2，表示平均1.2年换一份工作</div>
                 </div>
+                <div><span class="left">专业方向：</span>
+                    <input type="text" class="input" id="major" value="不限" style="width: 197px;" />
+                    <div class="tip">多个专业用'|'分隔，支持模糊检索和正则</div>
+                </div>
                 <div><span class="left">公司范围：</span>
                     <input type="text" class="input" id="tools_txt_companies" value="不限" style="width: 197px;" />
                     <div class="tip">多家公司用'|'分隔，支持模糊检索和正则</div>
+                </div>
+                <div><span class="left">显示方式：</span>
+                    <input type="radio" name="display_type" id="rd_mark" checked value="1" /><label for="rd_mark">标记命中</label>
+                    <input type="radio" name="display_type" id="rd_del"  value="2" /><label for="rd_del">删除过滤</label>
                 </div>
                 <div><span class="left"></span>
                     <input type="checkbox" id="auto_turn" checked /><label for="auto_turn">自动翻页</label>
@@ -183,7 +206,16 @@
         var text = $('ul.work-exp-box span.exp-content', $box).map((a, b) => b.innerText).get().join('---');
         return RegExp(companies).test(text)
     }
-
+    var validMajor = (companies, $box) => {
+        var text = $('ul.edu-exp-box span.exp-content', $box).map((a, b) => b.innerText).get().join('---');
+        return RegExp(companies).test(text)
+    }
+    
+    var validActivity = (act, idx) => {
+        var arr = ['刚刚活跃', '今日活跃', '3日内活跃', '本周活跃', '本月活跃'];
+        arr = arr.slice(0, idx);
+        return arr.indexOf(act) != -1;
+    }
     var filterHandle = ($elem, condition) => {
         //兼容非jQ的$
         if ($elem.attr('wz') == '1') return !1;
@@ -194,8 +226,9 @@
             age = ~~$span[1].innerText.replace('岁', ''),
             workYears = ~~$span[2].innerText.replace('年', ''),
             stability = getStability($$('ul.work-exp-box')),
-            isGreeted = $$('.iboss-goutongjindu-xian').length > 0;
-
+            isGreeted = $$('.iboss-goutongjindu-xian').length > 0,
+            activity = $span[0].innerText,
+            sex = $$('.iboss-icon_women').length > 0 ? 2 : 1;
 
         //排除在职不考虑机会
         if (without && condition.without)
@@ -215,6 +248,15 @@
         //公司过滤
         if (condition.companies && condition.companies != '不限' && !validCompanies(condition.companies, $$('ul.work-exp-box')))
             return !1;
+        //专业过滤
+        if (condition.major && condition.major != '不限' && !validMajor(condition.major, $$('ul.edu-exp-box')))
+            return !1;
+        //活跃度过滤
+        if (activity && condition.activity && !validActivity(activity, condition.activity))
+            return !1;
+        //性别
+        if (condition.sex && condition.sex != sex)
+            return !1;
 
         return !0;
     }
@@ -229,7 +271,11 @@
         var $box = $('#recommend-list ul.recommend-card-list'), $list = $box.children('li');
         var $resuls = $($list.filter((idx, item) => filterHandle($(item), condition)).get()).attr('wz', '1');
         wind.$resuls = $resuls;
-        $resuls.find('.geek-info-card').css({ "background-color": "#b8ff00", "animation": "fade 1000ms infinite ease-in-out" });
+
+        if (condition.displayType == '2')
+            $box.children('li:not([wz])').hide();
+        else
+            $resuls.find('.geek-info-card').css({ "background-color": "#b8ff00", "animation": "fade 1000ms infinite ease-in-out" });
         return $resuls;
     }
     //search({ minAge: 25,minWorkYears:2,stability:1.0,companies:'携程|点评|滴滴|中通' })
@@ -244,18 +290,60 @@
             minWorkYears: $$('#tools_txt_minWorkYears').val(),
             maxWorkYears: $$('#tools_txt_maxWorkYears').val(),
             stability: $$('#tools_txt_stability').val(),
-            companies: $$('#tools_txt_companies').val()
+            companies: $$('#tools_txt_companies').val(),
+            displayType: $$('[name="display_type"]:checked').val(),
+            activity: ~~$$('#activity').val(),
+            sex: ~~$$('[name="rd_sex"]:checked').val(),
+            major: $$('#major').val()
         }
     }
     var clearMark = () => {
-        $('#recommend-list ul.recommend-card-list>li').removeAttr('wz');
+        $('#recommend-list ul.recommend-card-list>li').show().removeAttr('wz');
         $('#recommend-list .geek-info-card').removeAttr('style');
+    }
+    function intval(v) {
+        v = parseInt(v);
+        return isNaN(v) ? 0 : v;
+    }
+    
+    function getPos(e) {
+        // left and top value
+        var left = 0;
+        var top = 0;
+    
+        // offsetParent返回一个指向最近的定位元素,标准模式如果没有就返回html/body,表示迁移量都是相对其中来计算.
+        while (e.offsetParent) {
+            // 计算偏移量
+            left += e.offsetLeft + (e.currentStyle ? intval(e.currentStyle.borderLeftWidth) : 0);
+            top += e.offsetTop + (e.currentStyle ? intval(e.currentStyle.borderTopWidth) : 0);
+    
+            // 最近的定位元素或者body
+            e = e.offsetParent;
+        }
+    
+        left += e.offsetLeft + (e.currentStyle ? intval(e.currentStyle.borderLeftWidth) : 0);
+        top += e.offsetTop + (e.currentStyle ? intval(e.currentStyle.borderTopWidth) : 0);
+    
+        return {
+            x: left,
+            y: top
+        };
+    }
+    var clickBtn=(btn)=>{
+        alert("会被Boss发现并踢出登录，正在紧急修复...");
+        return;
+        //debugger;
+        var poi =getPos(btn);
+        let target = doc.body;
+        let eventObj = doc.createEvent('MouseEvents');
+        eventObj.initMouseEvent('click',true,true,wind,0,0,0,poi.x,poi.y,false,false,true,false,0,null);
+        target.dispatchEvent(eventObj);
     }
     var delayClick = (btns, callback, idx) => {
         idx = idx || 0;
         var btn = btns[idx];
         if (btn) {
-            btn.click();
+            clickBtn(btn);
             console.log(btn);
             console.log('click');
             setTimeout(() => {
@@ -299,7 +387,7 @@
         var recursionClick = () => {
             flag = 0;
             var $resuls = search(getParams());
-            if($resuls.length==0)return;
+            if ($resuls.length == 0) return;
             delayClick($resuls.find('.btn-greet'), () => {
                 flag = 1;
                 if (autoTurn.checked) {
@@ -321,5 +409,9 @@
     render();
     bindEvent();
 })(typeof jQuery == 'undefined' ? $ : jQuery);
+
+
+
+
 
 //javascript:(function(){var script = document.createElement('script');script.src='//c.caibeike.net/download/attachments/110137307/tools.js?version=1&amp;modificationDate=1639623813355&amp;api=v2?'+new Date().getTime();document.querySelector("body").appendChild(script);})()
